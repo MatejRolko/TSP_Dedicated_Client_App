@@ -5,10 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using App.DTOs;
+using App.Client_Interface;
 
 namespace App.RestSharpClient
 {
-    public class OrderClient
+    public class OrderClient : IOrderClient
     {
         RestClient _client;
         public OrderClient(string restUrl) => _client = new RestClient(restUrl);

@@ -19,11 +19,12 @@ namespace App
             btnProducts.BackColor = SystemColors.ControlDark;
             btnOrders.BackColor = SystemColors.Control;
             btnUsers.BackColor = SystemColors.Control;
-            LoadData();
+            Task.Run(LoadData);
         }
 
         private void PopulateOrdersTable()
         {
+            tableLayoutPanel1.Visible = false;
             tableLayoutPanel1.Controls.Clear();
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.Controls.Add(new Label() { Text = "Order Number", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 0, 0);
@@ -35,19 +36,28 @@ namespace App
             tableLayoutPanel1.VerticalScroll.Enabled = true;
             tableLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            OrderClient oc = new OrderClient("https://localhost:44346/api/v1/orders");
-            List<OrderDto> orders = oc.GetAll().ToList();
-            int row = 0;
-            foreach (OrderDto order in orders)
+            List<OrderDto> orders = new List<OrderDto>();
+            try
             {
-                tableLayoutPanel1.RowCount += 1;
-                row++;
-                tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-                tableLayoutPanel1.Controls.Add(new Label() { Text = "" +order.Id, AutoSize = true }, 0, row);
-                tableLayoutPanel1.Controls.Add(new Label() { Text = "" +order.Date, AutoSize = true }, 1, row);
-                tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.TotalPrice, AutoSize = true }, 2, row);
-                tableLayoutPanel1.Controls.Add(new Label() { Text = "Details", AutoSize = true }, 3, row);
+                OrderClient oc = new OrderClient("https://localhost:44346/api/v1/orders");
+                orders = oc.GetAll().ToList();
+                int row = 0;
+                foreach (OrderDto order in orders)
+                {
+                    tableLayoutPanel1.RowCount += 1;
+                    row++;
+                    tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Id, AutoSize = true }, 0, row);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Date, AutoSize = true }, 1, row);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.TotalPrice, AutoSize = true }, 2, row);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Details", AutoSize = true }, 3, row);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to retrieve orders data. Please try again!", "Orders data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            tableLayoutPanel1.Visible = true;
         }
 
         private void LoadData()
@@ -57,6 +67,10 @@ namespace App
             try
             {
                 products = pc.GetAll().ToList();
+                listProducts.Items.Clear();
+
+                foreach (ProductDto p in products)
+                    listProducts.Items.Add(p);
 
             } catch(Exception ex)
             {
@@ -65,11 +79,6 @@ namespace App
 
             if (products == null)
                 return;
-
-            listProducts.Items.Clear();
-
-            foreach (ProductDto p in products)
-                listProducts.Items.Add(p);
         }
 
         private void listProducts_SelectedIndexChanged(object sender, EventArgs e)
@@ -153,8 +162,7 @@ namespace App
             panelOrders.Enabled = true;
             panelOrders.Visible = true;
             panelProducts.Visible = false;
-            PopulateOrdersTable();
-
+            Task.Run(PopulateOrdersTable);
         }
 
         private void btnUsers_Click(object sender, EventArgs e)
@@ -206,7 +214,8 @@ namespace App
             if (dialogResult == DialogResult.Yes)
             {
                 ProductClient productservice = new ProductClient("https://localhost:44346/api/v1/Products");
-                if(productservice.Delete(selectedProduct.Id)) 
+                bool deleted = productservice.Delete(selectedProduct.Id);
+                if (deleted) 
                 { 
                     MessageBox.Show(selectedProduct.Name + " successfully deleted!", "Product deletion", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     listProducts.Items.Remove(selectedProduct);

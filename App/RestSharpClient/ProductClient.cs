@@ -1,10 +1,11 @@
 ﻿using RestSharp;
 using App.DTOs;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using App.Client_Interface;
 
 namespace App.RestSharpClient
 {
-    public class ProductClient
+    public class ProductClient : IProductClient
     {
 
         RestClient _client;
@@ -38,7 +39,12 @@ namespace App.RestSharpClient
         public bool Delete(int id)
         {
             var request = new RestRequest($"{id}");
-            return _client.Delete<bool>(request);
+
+            var deleted = _client.Delete<bool>(request);
+            if (deleted)
+                return true;
+            else
+                return false;
         }
     }
 }

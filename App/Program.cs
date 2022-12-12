@@ -16,10 +16,13 @@ namespace App
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm());
+
+            LoginForm loginForm = new LoginForm();
+            Application.Run(loginForm);
+           
+            if(loginForm.UserSuccessfullyAuthenticated)
+                Application.Run(new MainForm());
 
             var host = CreateHostBuilder().Build();
             ServiceProvider = host.Services;
