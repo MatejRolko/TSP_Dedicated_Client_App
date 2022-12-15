@@ -1,33 +1,43 @@
 ﻿using App.Client_Interface;
-using App.Controllers.Cache;
+using App.Cache;
+using App.DTOs;
 using App.Exceptions;
-using App.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+
 
 namespace App.Controllers
 {
     public class AuthenticationController
     {
         IAuthenticationClient auth_client;
+        AccessToken accessToken = AccessToken.Instance;
 
         public AuthenticationController(IAuthenticationClient authClient)
         {
             auth_client = authClient;
         }
 
-        public async Task<bool> LoginAsync(LoginModel loginModel)
+        public async Task<bool> LoginAsync(LoginModelDto loginModel)
         {
             try
             {
-                string tokenData = await auth_client.LoginAsync(loginModel);
-                AccessToken.Instance.Data = tokenData;
+                var result = await auth_client.LoginAsync(loginModel);
+                if(result != "")
+                {
+                    string? TokenString = (string?)JObject.Parse(result)["token"];
+                    if(TokenString != null)
+                    {
+                        //accessToken.Data = TokenString;
+                        //var instance = AccessToken.Instance;
+                        //string s = accessToken.Data;
+                        //Globals.Token = TokenString;
+                        Globals.Authenticated = true;
+                    }
+                    
+                }
                 return true;
             }
-            catch(WrongLoginException logEx)
+            catch (WrongLoginException logEx)
             {
                 throw new WrongLoginException($"Incorect login data={loginModel}. Message was {logEx.Message}");
             }

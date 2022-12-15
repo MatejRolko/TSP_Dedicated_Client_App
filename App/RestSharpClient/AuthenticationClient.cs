@@ -1,7 +1,7 @@
 ﻿
 using App.Client_Interface;
+using App.DTOs;
 using App.Exceptions;
-using App.Model;
 using RestSharp;
 using System.Net;
 
@@ -12,26 +12,21 @@ namespace App.RestSharpClient
         RestClient _client;
         public AuthenticationClient(string restUrl) => _client = new RestClient(restUrl);
 
-        public async Task<string> LoginAsync(LoginModel loginModel)
+        public async Task<string> LoginAsync(LoginModelDto loginModel)
         {
-            var request = new RestRequest().AddBody(loginModel);
-            try
+            RestRequest request = new RestRequest().AddBody(loginModel);
+            //request.AddHeader("Bearer", )
+
+            var response = await _client.ExecutePostAsync(request);
+            if (response.StatusCode.Equals(HttpStatusCode.Forbidden))
             {
-                var response = await _client.PostAsync(request);
-                if (!response.IsSuccessful)
-                {
-                    throw new Exception($"Error loggin in author with login data={loginModel}. Message was {response.Content}");
-                }
-                return response.Content;
+                throw new WrongLoginException($"Incorect login data={loginModel}. Message was {response.ErrorMessage}");
             }
-            catch(HttpRequestException requestException)
+            if (!response.IsSuccessful || response.Content == null)
             {
-                if (requestException.StatusCode.Equals(HttpStatusCode.Forbidden))
-                {
-                    throw new WrongLoginException($"Incorect login data={loginModel}. Message was {requestException.Message}");
-                }
-                throw requestException;
+                throw new Exception($"Error loggin in author with login data={loginModel}. Message was {response.Content}");
             }
+            return response.Content;
         }
     }
 }

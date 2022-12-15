@@ -1,5 +1,4 @@
 ﻿using App.DTOs;
-using App.Model;
 using RestSharp;
 using System;
 using System.Collections.Generic;

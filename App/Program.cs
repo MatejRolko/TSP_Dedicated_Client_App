@@ -1,4 +1,5 @@
 
+using App.Cache;
 using App.Client_Interface;
 using App.Controllers;
 using App.RestSharpClient;
@@ -16,16 +17,26 @@ namespace App
         [STAThread]
         static void Main()
         {
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
             ApplicationConfiguration.Initialize();
 
-            LoginForm loginForm = new LoginForm();
-            Application.Run(loginForm);
-           
-            if(loginForm.UserSuccessfullyAuthenticated)
-                Application.Run(new MainForm());
+            //LoginForm loginForm = new LoginForm();
+            //Application.Run(loginForm);
+
+            
 
             var host = CreateHostBuilder().Build();
             ServiceProvider = host.Services;
+
+            Application.Run(ServiceProvider.GetRequiredService<LoginForm>());
+
+            if(Globals.Authenticated){
+                Application.Run(new MainForm());
+            }
+                
         }
 
         public static IServiceProvider ServiceProvider { get; private set; }
@@ -35,8 +46,19 @@ namespace App
                 .ConfigureServices((context, services) => {
 
                     //Add services
-                    services.AddSingleton<IAuthenticationClient, AuthenticationClient>();
+                    //..
+                    //Client  services
+                    string authUrl = "https://localhost:44346/api/v1/authentication";
+                    IAuthenticationClient authenticationClient = new AuthenticationClient(authUrl);
+                    services.AddScoped<IAuthenticationClient>((cs) => authenticationClient);
+
+                    //services.AddSingleton<IAuthenticationClient, AuthenticationClient>();
                     services.AddSingleton<AuthenticationController>();
+
+                    //Controllers
+                    services.AddSingleton<LoginForm>();
+
+
 
                 });
         }

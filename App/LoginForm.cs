@@ -1,28 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿
+
+using App.Controllers;
+using App.DTOs;
 
 namespace App
 {
     public partial class LoginForm : Form
     {
         public bool UserSuccessfullyAuthenticated { get; private set; }
+        private AuthenticationController auth_controller;
 
-        public LoginForm()
+        public LoginForm(AuthenticationController auth_controller)
         {
             InitializeComponent();
+            this.auth_controller = auth_controller;
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
-            UserSuccessfullyAuthenticated = true;
-            Close();
+            LoginModelDto loginModel = new() { Email = textBox2.Text, Password = textBox1.Text };
+            var success = await auth_controller.LoginAsync(loginModel);
+            if (success)
+            {
+                UserSuccessfullyAuthenticated = true;
+                Close();
+            }
+            else
+            {
+                //implement
+            }
+            
+            
         }
     }
 }
