@@ -24,40 +24,46 @@ namespace App
 
         private void PopulateOrdersTable()
         {
-            tableLayoutPanel1.Visible = false;
-            tableLayoutPanel1.Controls.Clear();
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.Controls.Add(new Label() { Text = "Order Number", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 0, 0);
-            tableLayoutPanel1.Controls.Add(new Label() { Text = "Date", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 1, 0);
-            tableLayoutPanel1.Controls.Add(new Label() { Text = "Total", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 2, 0);
-            tableLayoutPanel1.Controls.Add(new Label() { Text = "Order Details", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 3, 0);
-            tableLayoutPanel1.HorizontalScroll.Enabled = false;
-            tableLayoutPanel1.AutoScroll = true;
-            tableLayoutPanel1.VerticalScroll.Enabled = true;
-            tableLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            List<OrderDto> orders = new List<OrderDto>();
-            try
+            if (InvokeRequired)
             {
-                OrderClient oc = new OrderClient("https://localhost:44346/api/v1/orders");
-                orders = oc.GetAll().ToList();
-                int row = 0;
-                foreach (OrderDto order in orders)
+                BeginInvoke(new Action(() =>
                 {
-                    tableLayoutPanel1.RowCount += 1;
-                    row++;
-                    tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Id, AutoSize = true }, 0, row);
-                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Date, AutoSize = true }, 1, row);
-                    tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.TotalPrice, AutoSize = true }, 2, row);
-                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Details", AutoSize = true }, 3, row);
-                }
+                    tableLayoutPanel1.Visible = false;
+                    tableLayoutPanel1.Controls.Clear();
+                    tableLayoutPanel1.RowCount = 1;
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Order Number", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 0, 0);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Date", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 1, 0);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Total", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 2, 0);
+                    tableLayoutPanel1.Controls.Add(new Label() { Text = "Order Details", AutoSize = true, TextAlign = ContentAlignment.MiddleCenter }, 3, 0);
+                    tableLayoutPanel1.HorizontalScroll.Enabled = false;
+                    tableLayoutPanel1.AutoScroll = true;
+                    tableLayoutPanel1.VerticalScroll.Enabled = true;
+                    tableLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+                    tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+                    List<OrderDto> orders = new List<OrderDto>();
+                    try
+                    {
+                        OrderClient oc = new OrderClient("https://localhost:44346/api/v1/orders");
+                        orders = oc.GetAll().ToList();
+                        int row = 0;
+                        foreach (OrderDto order in orders)
+                        {
+                            tableLayoutPanel1.RowCount += 1;
+                            row++;
+                            tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
+                            tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Id, AutoSize = true }, 0, row);
+                            tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.Date, AutoSize = true }, 1, row);
+                            tableLayoutPanel1.Controls.Add(new Label() { Text = "" + order.TotalPrice, AutoSize = true }, 2, row);
+                            tableLayoutPanel1.Controls.Add(new Label() { Text = "Details", AutoSize = true }, 3, row);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Unable to retrieve orders data. Please try again!", "Orders data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    tableLayoutPanel1.Visible = true;
+                }));
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Unable to retrieve orders data. Please try again!", "Orders data", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            tableLayoutPanel1.Visible = true;
         }
 
         private void LoadData()
@@ -67,10 +73,16 @@ namespace App
             try
             {
                 products = pc.GetAll().ToList();
-                listProducts.Items.Clear();
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                    {
+                        listProducts.Items.Clear();
 
-                foreach (ProductDto p in products)
-                    listProducts.Items.Add(p);
+                        foreach (ProductDto p in products)
+                            listProducts.Items.Add(p);
+                    }));
+                }
 
             } catch(Exception ex)
             {

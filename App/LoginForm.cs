@@ -2,6 +2,8 @@
 
 using App.Controllers;
 using App.DTOs;
+using App.Exceptions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace App
 {
@@ -18,8 +20,26 @@ namespace App
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            LoginModelDto loginModel = new() { Email = textBox2.Text, Password = textBox1.Text };
-            var success = await auth_controller.LoginAsync(loginModel);
+            lblIncorrectLogin.Visible = false;
+
+            if(textUsername.Text.IsNullOrEmpty() || textPassword.Text.IsNullOrEmpty())
+            {
+                lblIncorrectLogin.Visible = true;
+                return;
+            }
+
+            LoginModelDto loginModel = new() { Email = textUsername.Text, Password = textPassword.Text };
+            var success = false;
+
+            try
+            {
+                success = await auth_controller.LoginAsync(loginModel);
+            }
+            catch (Exception ex)
+            {
+                lblIncorrectLogin.Visible = true;
+            }
+
             if (success)
             {
                 UserSuccessfullyAuthenticated = true;

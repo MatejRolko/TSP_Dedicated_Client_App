@@ -4,7 +4,6 @@ using App.DTOs;
 using App.Exceptions;
 using Newtonsoft.Json.Linq;
 
-
 namespace App.Controllers
 {
     public class AuthenticationController
