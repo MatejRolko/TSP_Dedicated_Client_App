@@ -3,13 +3,14 @@ using App.Cache;
 using App.DTOs;
 using App.Exceptions;
 using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace App.Controllers
 {
     public class AuthenticationController
     {
         IAuthenticationClient auth_client;
-        AccessToken accessToken = AccessToken.Instance;
 
         public AuthenticationController(IAuthenticationClient authClient)
         {
@@ -26,13 +27,19 @@ namespace App.Controllers
                     string? TokenString = (string?)JObject.Parse(result)["token"];
                     if(TokenString != null)
                     {
-                        //accessToken.Data = TokenString;
-                        //var instance = AccessToken.Instance;
-                        //string s = accessToken.Data;
-                        //Globals.Token = TokenString;
-                        Globals.Authenticated = true;
+                        JwtSecurityToken Jst = new(TokenString);
+                        List<Claim> theApiClaims = (List<Claim>)Jst.Claims.ToList();
+                        theApiClaims.Add(new Claim("token", TokenString));
+
+                        var claimsIdentity = new ClaimsIdentity(theApiClaims, "Login");
+                        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+                        string role = claimsPrincipal.FindFirst(ClaimTypes.Role).Value;
+                        if (role.Equals("Admin"))
+                        {
+                            Globals.Authenticated = true;
+                        }
+                        
                     }
-                    
                 }
                 return true;
             }

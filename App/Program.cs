@@ -23,11 +23,6 @@ namespace App
 
             ApplicationConfiguration.Initialize();
 
-            //LoginForm loginForm = new LoginForm();
-            //Application.Run(loginForm);
-
-            
-
             var host = CreateHostBuilder().Build();
             ServiceProvider = host.Services;
 
